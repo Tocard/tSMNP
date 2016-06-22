@@ -1,0 +1,66 @@
+<%@ jet 
+    imports="
+        org.talend.core.model.process.INode 
+        org.talend.core.model.process.ElementParameterParser 
+        org.talend.core.model.metadata.IMetadataTable 
+        org.talend.core.model.metadata.IMetadataColumn 
+        org.talend.core.model.process.IConnection
+        org.talend.core.model.process.IConnectionCategory
+        org.talend.designer.codegen.config.CodeGeneratorArgument
+        org.talend.core.model.metadata.types.JavaTypesManager
+        org.talend.core.model.metadata.types.JavaType
+        java.util.List 
+        java.util.Map
+        java.util.StringTokenizer
+        java.net.InetAddress
+        
+    " 
+%>
+<% 
+    CodeGeneratorArgument codeGenArgument = (CodeGeneratorArgument) argument;
+    INode node = (INode)codeGenArgument.getArgument();
+    String cid = node.getUniqueName();
+    
+    
+    String snmp_server = ElementParameterParser.getValue(node, "__SNMP_SERVER__");
+    int snmp_port = Integer.parseInt(ElementParameterParser.getValue(node, "__SNMP_SERVER_PORT__"));
+    String snmp_oid = ElementParameterParser.getValue(node, "__OID__");
+    String snmp_com = ElementParameterParser.getValue(node, "__COMMUNITY_STRING__");
+    String snmp_msg = ElementParameterParser.getValue(node, "__SNMP_MSG__");
+    int snmp_retries = Integer.parseInt(ElementParameterParser.getValue(node, "__SNMP_RETRIES__"));
+    int snmp_timeout = Integer.parseInt(ElementParameterParser.getValue(node, "__SNMP_TIMEOUT__"));
+    int snmp_generic_trap_type = Integer.parseInt(ElementParameterParser.getValue(node, "__SNMP_GENERIC_TRAP_TYPE__"));
+    int snmp_specific_trap_type = Integer.parseInt(ElementParameterParser.getValue(node, "__SNMP_SPECIFIC_TRAP_TYPE__"));
+        
+    
+%>
+
+   org.snmp4j.Snmp mSnmp = new org.snmp4j.Snmp();
+   org.snmp4j.CommunityTarget mCommunityTarget = new org.snmp4j.CommunityTarget();
+   
+
+   org.snmp4j.TransportMapping vTransport = new org.snmp4j.transport.DefaultUdpTransportMapping();
+   mSnmp = new org.snmp4j.Snmp(vTransport);
+   org.snmp4j.PDUv1 vTrapPdu = new org.snmp4j.PDUv1();
+   vTransport.listen();
+   
+   //SETUP FROM USER
+   mCommunityTarget.setCommunity(new org.snmp4j.smi.OctetString(<%=snmp_com %>));
+   mCommunityTarget.setAddress(new org.snmp4j.smi.UdpAddress(java.net.InetAddress.getByName(<%=snmp_server %>),<%=snmp_port %>));   
+   mCommunityTarget.setRetries(<%=snmp_retries %>);
+   mCommunityTarget.setTimeout(<%=snmp_timeout %>);
+   mCommunityTarget.setVersion(org.snmp4j.mp.SnmpConstants.version1);
+
+   //vTrapPdu.setType(org.snmp4j.PDU.V1TRAP);
+   vTrapPdu.setGenericTrap(<%=snmp_generic_trap_type %>);
+   vTrapPdu.setSpecificTrap(<%=snmp_specific_trap_type %>);
+     
+   vTrapPdu.setEnterprise(new org.snmp4j.smi.OID(<%=snmp_oid %>));
+   vTrapPdu.add(new org.snmp4j.smi.VariableBinding(new org.snmp4j.smi.OID(<%=snmp_oid %>), new org.snmp4j.smi.OctetString(<%=snmp_msg %>)));
+   
+   //TODO:  Fix timestamp
+   //vTrapPdu.setTimestamp(java.lang.System.currentTimeMillis());
+   
+   
+   //SEND TRAP
+   mSnmp.send(vTrapPdu, mCommunityTarget);
