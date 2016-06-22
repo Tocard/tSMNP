@@ -22,23 +22,24 @@
     String cid = node.getUniqueName();
     
     
+    //Hotfix : all issue from talend convert to String, and interpret after with the context.
+
     String snmp_server = ElementParameterParser.getValue(node, "__SNMP_SERVER__");
-    int snmp_port = Integer.parseInt(ElementParameterParser.getValue(node, "__SNMP_SERVER_PORT__"));
+    String snmp_port = ElementParameterParser.getValue(node, "__SNMP_SERVER_PORT__" );
     String snmp_oid = ElementParameterParser.getValue(node, "__OID__");
     String snmp_com = ElementParameterParser.getValue(node, "__COMMUNITY_STRING__");
     String snmp_msg = ElementParameterParser.getValue(node, "__SNMP_MSG__");
-    int snmp_retries = Integer.parseInt(ElementParameterParser.getValue(node, "__SNMP_RETRIES__"));
-    int snmp_timeout = Integer.parseInt(ElementParameterParser.getValue(node, "__SNMP_TIMEOUT__"));
-    int snmp_generic_trap_type = Integer.parseInt(ElementParameterParser.getValue(node, "__SNMP_GENERIC_TRAP_TYPE__"));
-    int snmp_specific_trap_type = Integer.parseInt(ElementParameterParser.getValue(node, "__SNMP_SPECIFIC_TRAP_TYPE__"));
-        
+    String snmp_retries = ElementParameterParser.getValue(node, "__SNMP_RETRIES__");
+    String snmp_timeout = ElementParameterParser.getValue(node, "__SNMP_TIMEOUT__");
+    String snmp_generic_trap_type = ElementParameterParser.getValue(node, "__SNMP_GENERIC_TRAP_TYPE__");
+    String snmp_specific_trap_type = ElementParameterParser.getValue(node, "__SNMP_SPECIFIC_TRAP_TYPE__");
     
+   
 %>
-
    org.snmp4j.Snmp mSnmp = new org.snmp4j.Snmp();
    org.snmp4j.CommunityTarget mCommunityTarget = new org.snmp4j.CommunityTarget();
+      
    
-
    org.snmp4j.TransportMapping vTransport = new org.snmp4j.transport.DefaultUdpTransportMapping();
    mSnmp = new org.snmp4j.Snmp(vTransport);
    org.snmp4j.PDUv1 vTrapPdu = new org.snmp4j.PDUv1();
